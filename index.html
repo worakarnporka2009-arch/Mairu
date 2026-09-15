@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พิพิธภัณฑ์กาลเวลา</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-main: #FAF7F2;
+            --card-bg: #FFFFFF;
+            --text-main: #4A3E3D;
+            --text-muted: #8C7A6B;
+            --primary: #8B5E3C;
+            --primary-hover: #6F4A2F;
+            --accent: #E8A87C;
+            
+            --egypt-bg: #FFF8E7;
+            --egypt-border: #E6C280;
+            --greece-bg: #EBF8FF;
+            --greece-border: #90CDF4;
+            --rome-bg: #FFF5F5;
+            --rome-border: #FEB2B2;
+            --eastwest-bg: #E6FFFA;
+            --eastwest-border: #81E6D9;
+            
+            --shadow-sm: 0 2px 8px rgba(139, 94, 60, 0.08);
+            --shadow-md: 0 4px 16px rgba(139, 94, 60, 0.12);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            position: relative;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-main);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 95vh;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        /* ส่วนหัว Top Bar */
+        header {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-badge {
+            background: #F3EFEA;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ปุ่มกดหลัก */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #EFE8DF;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: #E2D7C8;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* ปุ่มรีเซ็ตลอยมุมขวาล่าง */
+        .floating-reset-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #EF4444;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            z-index: 99;
+            transition: all 0.2s ease;
+        }
+
+        .floating-reset-btn:hover {
+            background: #DC2626;
+            transform: scale(1.1) rotate(-30deg);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.45);
+        }
+
+        .floating-reset-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Screen Wrapper */
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            padding: 10px 4px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* หน้าแรก (Home) */
+        .home-hero {
+            text-align: center;
+            padding: 24px 16px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 16px;
+        }
+
+        .home-hero h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .home-hero p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .museum-preview-box {
+            background: #FBF8F3;
+            border: 2px dashed #E5DCD0;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            min-height: 180px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .preview-item-icon {
+            font-size: 2.2rem;
+            background: white;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            animation: popIn 0.4s ease;
+            cursor: pointer;
+        }
+
+        .home-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        /* การ์ดหมวดหมู่ */
+        .category-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            border-left: 6px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .category-card:hover {
+            transform: translateX(4px);
+        }
+
+        .cat-egypt { border-color: #D4A373; background: var(--egypt-bg); }
+        .cat-greece { border-color: #38BDF8; background: var(--greece-bg); }
+        .cat-rome { border-color: #EF4444; background: var(--rome-bg); }
+        .cat-eastwest { border-color: #14B8A6; background: var(--eastwest-bg); }
+
+        .cat-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .cat-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* หน้าความรู้ & คำถาม */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            margin-bottom: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .item-big-icon {
+            font-size: 4.5rem;
+            margin-bottom: 12px;
+            background: var(--bg-main);
+            width: 110px;
+            height: 110px;
+            line-height: 110px;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tag-era {
+            display: inline-block;
+            background: #EFE8DF;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .knowledge-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            text-align: left;
+            width: 100%;
+            background: #FAF7F2;
+            padding: 16px;
+            border-radius: var(--radius-md);
+        }
+
+        .fun-fact-box {
+            background: #FFFBEB;
+            border: 1px solid #FCD34D;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            color: #78350F;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .option-btn {
+            background: var(--card-bg);
+            border: 2px solid #E5DCD0;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #FAF7F2;
+        }
+
+        .option-btn.correct {
+            background: #DEF7EC;
+            border-color: #31C48D;
+            color: #03543F;
+        }
+
+        .option-btn.wrong {
+            background: #FDE8E8;
+            border-color: #F98080;
+            color: #9B1C1C;
+        }
+
+        /* หน้าคอลเลกชัน & พิพิธภัณฑ์ */
+        .grid-collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .collect-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            padding: 8px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .collect-card:hover {
+            transform: scale(1.04);
+        }
+
+        .collect-card.locked {
+            background: #EFE8DF;
+            opacity: 0.6;
+        }
+
+        .collect-card .icon {
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+
+        .collect-card.locked .icon {
+            filter: brightness(0);
+            opacity: 0.2;
+        }
+
+        .collect-card .name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--text-main);
+        }
+
+        /* ความเชื่อมโยง */
+        .connection-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--accent);
+        }
+
+        .connection-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 12px 0;
+            background: #FAF7F2;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Modal แจ้งเตือน / รายละเอียด */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(74, 62, 61, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .progress-bar-bg {
+            background: #EFE8DF;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sub-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .back-btn {
+            background: #EFE8DF;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* เหรียญตรา */
+        .badge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .badge-card {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid #E5DCD0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.5;
+        }
+
+        .badge-card.unlocked {
+            opacity: 1;
+            border-color: var(--accent);
+            background: #FFFBEB;
+        }
+
+        .badge-icon {
+            font-size: 1.8rem;
+        }
+
+        .badge-text h4 { font-size: 0.85rem; }
+        .badge-text p { font-size: 0.7rem; color: var(--text-muted); }
+
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- แถบบนสุด -->
+    <header>
+        <div class="header-title">
+            🏛️ พิพิธภัณฑ์กาลเวลา
+        </div>
+        <div class="header-stats">
+            <div class="stat-badge">
+                ⭐ <span id="knowledge-points">0</span>
+            </div>
+            <div class="stat-badge">
+                📦 <span id="overall-progress-text">0/40</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. หน้าแรก (Home Screen) -->
+    <div id="screen-home" class="screen active">
+        <div class="home-hero">
+            <h1>พิพิธภัณฑ์กาลเวลา</h1>
+            <p>เรียนรู้ประวัติศาสตร์ ผ่านการค้นพบของคุณ</p>
+            
+            <div class="museum-preview-box" id="home-museum-preview">
+                <!-- ไอคอนสิ่งของที่ปลดล็อกแล้วจะมาขึ้นตรงนี้ -->
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700;">
+                    <span>ความคืบหน้าการสะสมทั้งหมด</span>
+                    <span id="overall-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="overall-progress-bar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="home-menu-grid">
+            <button class="btn btn-full" style="grid-column: span 2; font-size: 1.1rem; padding: 16px;" onclick="showScreen('screen-select-category')">
+                🔍 เริ่มสำรวจ
+            </button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-museum')">
+                🏛️ พิพิธภัณฑ์ของฉัน
+            </button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-collection')">
+                📖 คอลเลกชัน
+            </button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-connections')">
+                🔗 ความเชื่อมโยง
+            </button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-achievements')">
+                🏆 ความสำเร็จ
+            </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 16px;">
+            <button class="btn-secondary" style="border:none; background:transparent; font-size:0.85rem; cursor:pointer; color:var(--text-muted);" onclick="openHelpModal()">
+                ❓ วิธีเล่น
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. หน้าเลือกหมวดหมู่ (Select Category) -->
+    <div id="screen-select-category" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">✕</button>
+            <h2 class="section-title" style="margin:0;">เลือกยุคสมัยประวัติศาสตร์</h2>
+        </div>
+
+        <div id="category-list">
+            <!-- จะถูกสร้างผ่าน JS -->
+        </div>
+    </div>
+
+    <!-- 3. หน้าเรียนรู้ (Knowledge Page) -->
+    <div id="screen-knowledge" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-select-category')">✕</button>
+            <span class="tag-era" id="learn-era-tag">หมวดหมู่</span>
+        </div>
+
+        <div class="content-card">
+            <div class="item-big-icon" id="learn-icon">🏺</div>
+            <h2 id="learn-title" style="margin-bottom: 8px;">ชื่อสิ่งประดิษฐ์</h2>
+            <p id="learn-subname" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;"></p>
+            
+            <div class="knowledge-text" id="learn-description">
+                ข้อความอธิบายข้อมูลประวัติศาสตร์...
+            </div>
+
+            <div class="fun-fact-box" id="learn-fun-fact">
+                💡 <b>เกร็ดความรู้:</b> ข้อความเกร็ดความรู้...
+            </div>
+
+            <button class="btn btn-full" onclick="startQuestionPhase()">
+                ✍️ พร้อมตอบคำถาม
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. หน้าคำถาม (Question Page) -->
+    <div id="screen-question" class="screen">
+        <div class="sub-header">
+            <span class="tag-era" id="quiz-era-tag">คำถามทบทวน</span>
+        </div>
+
+        <div class="content-card">
+            <h3 id="quiz-question-text" style="margin-bottom: 16px; font-size: 1.1rem; text-align: left; width: 100%;">
+                คำถามจะแสดงตรงนี้?
+            </h3>
+
+            <div class="options-grid" id="quiz-options-container">
+                <!-- ตัวเลือกจะสร้างผ่าน JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. หน้าพิพิธภัณฑ์ของฉัน (Museum Display) -->
+    <div id="screen-museum" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">✕</button>
+            <h2 class="section-title" style="margin:0;">พิพิธภัณฑ์ของฉัน</h2>
+        </div>
+
+        <div style="background: var(--card-bg); padding: 16px; border-radius: var(--radius-lg); flex:1; box-shadow: var(--shadow-sm);">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; text-align: center;">
+                แตะที่สิ่งจัดแสดงเพื่ออ่านข้อมูลรายละเอียดเพิ่มเติม
+            </p>
+            <div class="grid-collection" id="museum-display-grid">
+                <!-- สิ่งจัดแสดงในพิพิธภัณฑ์ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. หน้าคอลเลกชัน (Collection Grid) -->
+    <div id="screen-collection" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">✕</button>
+            <h2 class="section-title" style="margin:0;">คอลเลกชันทั้งหมด</h2>
+        </div>
+
+        <div style="flex:1; overflow-y:auto;">
+            <div id="collection-sections">
+                <!-- รายการแบ่งตามหมวดหมู่ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. หน้าความเชื่อมโยง (Connections) -->
+    <div id="screen-connections" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">✕</button>
+            <h2 class="section-title" style="margin:0;">ความเชื่อมโยงทางประวัติศาสตร์</h2>
+        </div>
+
+        <div id="connections-list" style="flex:1; overflow-y:auto;">
+            <!-- รายการความเชื่อมโยง -->
+        </div>
+    </div>
+
+    <!-- 8. หน้าความสำเร็จ (Achievements) -->
+    <div id="screen-achievements" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">✕</button>
+            <h2 class="section-title" style="margin:0;">เหรียญตราความสำเร็จ</h2>
+        </div>
+
+        <div class="badge-grid" id="achievements-container">
+            <!-- เหรียญตราความสำเร็จ -->
+        </div>
+    </div>
+</div>
+
+<!-- ปุ่มรีเซ็ตข้อมูลลอยมุมขวาล่าง -->
+<button class="floating-reset-btn" onclick="resetProgress()" title="รีเซ็ตข้อมูลเกมทั้งหมด">
+    🔄
+</button>
+
+<!-- Modal รายละเอียดสิ่งของ / ผลการตอบ -->
+<div id="modal-detail" class="modal-overlay">
+    <div class="modal-content">
+        <div id="modal-icon" style="font-size: 4rem; margin-bottom: 8px;">✨</div>
+        <h2 id="modal-title" style="color: var(--primary); margin-bottom: 4px;">หัวข้อ</h2>
+        <p id="modal-subtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;"></p>
+        
+        <div id="modal-body-text" style="font-size: 0.95rem; line-height: 1.5; text-align: left; background: #FAF7F2; padding: 12px; border-radius: var(--radius-md); margin-bottom: 16px;">
+            รายละเอียด...
+        </div>
+
+        <div id="modal-action-buttons">
+            <button class="btn btn-full" onclick="closeModal()">ตกลง</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal วิธีเล่น -->
+<div id="modal-help" class="modal-overlay">
+    <div class="modal-content" style="text-align: left;">
+        <h2 style="color: var(--primary); margin-bottom: 12px; text-align: center;">วิธีเล่นพิพิธภัณฑ์กาลเวลา</h2>
+        <ul style="line-height: 1.8; font-size: 0.9rem; padding-left: 20px; color: var(--text-main);">
+            <li>กดปุ่ม <b>"เริ่มสำรวจ"</b> เพื่อเลือกหมวดหมู่ประวัติศาสตร์</li>
+            <li>อ่านและเรียนรู้ข้อมูลโบราณวัตถุใน <b>"หน้าความรู้"</b></li>
+            <li>ตอบคำถามทบทวนความรู้ให้ถูกต้อง</li>
+            <li>เมื่อตอบถูกต้อง คุณจะได้รับโบราณวัตถุเข้าสู่ <b>"พิพิธภัณฑ์ของฉัน"</b></li>
+            <li>สะสมโบราณวัตถุให้ครบ และค้นหา <b>"ความเชื่อมโยงทางประวัติศาสตร์"</b></li>
+            <li>หากตอบผิด ระบบจะสุ่มข้ออื่นให้ลองทำใหม่</li>
+        </ul>
+        <br>
+        <button class="btn btn-full" onclick="closeHelpModal()">เข้าใจแล้ว</button>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// ข้อมูลหลักของเกม (GAME DATA - 100% THAI)
+// ==========================================
+
+const CATEGORIES = {
+    egypt: { id: "egypt", name: "อียิปต์โบราณ", icon: "🇪🇬", class: "cat-egypt" },
+    greece: { id: "greece", name: "กรีกโบราณ", icon: "🇬🇷", class: "cat-greece" },
+    rome: { id: "rome", name: "โรมันโบราณ", icon: "🏛️", class: "cat-rome" },
+    eastwest: { id: "eastwest", name: "ความเชื่อมโยงตะวันออก–ตะวันตก", icon: "🌏", class: "cat-eastwest" }
+};
+
+const ITEMS_DATA = [
+    // --- อียิปต์โบราณ (10 รายการ) ---
+    {
+        id: "e1",
+        categoryId: "egypt",
+        name: "โถคาโนปิก",
+        subName: "(Canopic Jar)",
+        icon: "🏺",
+        era: "อียิปต์โบราณ",
+        description: "ชาวอียิปต์โบราณใช้โถคาโนปิกเพื่อเก็บรักษาอวัยวะภายในของผู้เสียชีวิตในระหว่างกระบวนการทำมัมมี่ โดยโถแต่ละใบจะมีฝาเป็นรูปเทพเจ้าผู้คุ้มครองอวัยวะแต่ละชนิด",
+        funFact: "โถทั้ง 4 ใบจะคุ้มครอง ตับ ปอด กระเพาะ และลำไส้ ส่วนหัวใจจะถูกเก็บไว้ในร่างกายเพื่อใช้ชั่งน้ำหนักในโลกหลังความตาย",
+        question: "โถคาโนปิกมีหน้าที่สำคัญอย่างไรในอารยธรรมอียิปต์โบราณ?",
+        options: ["ใช้เก็บอาหารสำหรับเดินทาง", "ใช้เก็บรักษาอวัยวะในการทำมัมมี่", "ใช้หมักเครื่องดื่มในพิธีกรรม", "ใช้บรรจุตารางคำนวนดวงดาว"],
+        correctIndex: 1
+    },
+    {
+        id: "e2",
+        categoryId: "egypt",
+        name: "แมลงสคารับ",
+        subName: "(Scarab Beetle)",
+        icon: "🪲",
+        era: "อียิปต์โบราณ",
+        description: "แมลงสคารับหรือด้วงมูลสัตว์ เป็นสัญลักษณ์แห่งการเกิดใหม่และการหมุนเวียนของดวงอาทิตย์ ชาวอียิปต์มักทำเป็นเครื่องรางและตราประทับ",
+        funFact: "ชาวอียิปต์เห็นแมลงสคารับกลิ้งก้อนมูลสัตว์ จึงเปรียบเหมือนเทพเจ้าที่กลิ้งดวงอาทิตย์ข้ามท้องฟ้าในทุกๆ เช้า",
+        question: "แมลงสคารับเป็นสัญลักษณ์ของสิ่งใดในอียิปต์โบราณ?",
+        options: ["ความมืดมิดและการสูญสิ้น", "การเกิดใหม่และการหมุนเวียนของดวงอาทิตย์", "ความอุดมสมบูรณ์ของการเกษตร", "ชัยชนะในสงคราม"],
+        correctIndex: 1
+    },
+    {
+        id: "e3",
+        categoryId: "egypt",
+        name: "หน้ากากทองคำฟาโรห์ตุนอังคาเมน",
+        subName: "(Tutankhamun's Mask)",
+        icon: "👑",
+        era: "อียิปต์โบราณ",
+        description: "หน้ากากทองคำแท้ประดับด้วยหินรัตนชาติ ทำขึ้นเพื่อสวมให้กับมัมมี่ของฟาโรห์ตุนอังคาเมน สะท้อนถึงความรุ่งเรืองทางศิลปกรรมและทองคำของอียิปต์",
+        funFact: "หน้ากากนี้ทำจากทองคำหนาหนักกว่า 10 กิโลกรัม ถูกค้นพบในสภาพสมบูรณ์แบบโดยฮาวาร์ด คาร์เตอร์",
+        question: "หน้ากากทองคำฟาโรห์ตุนอังคาเมนสะท้อนถึงความโดดเด่นด้านใด?",
+        options: ["เทคโนโลยีการต่อเรือ", "ความประณีตของศิลปกรรมและทองคำโบราณ", "การสลักหินปูนขนาดใหญ่", "ระบบการทำชลประทาน"],
+        correctIndex: 1
+    },
+    {
+        id: "e4",
+        categoryId: "egypt",
+        name: "มหาพีระมิดแห่งกีซา",
+        subName: "(Great Pyramid of Giza)",
+        icon: "🧱",
+        era: "อียิปต์โบราณ",
+        description: "สิ่งก่อสร้างขนาดใหญ่ที่สร้างขึ้นเพื่อเป็นสุสานของฟาโรห์คูฟู ใช้หินตัดประกอบกันมากกว่า 2 ล้านก้อนอย่างแม่นยำตามหลักดาราศาสตร์",
+        funFact: "มหาพีระมิดเคยเป็นสิ่งก่อสร้างที่สูงที่สุดในโลกยาวนานกว่า 3,800 ปี",
+        question: "มหาพีระมิดแห่งกีซาสร้างขึ้นเพื่อวัตถุประสงค์หลักใด?",
+        options: ["ป้อมปราการป้องกันศัตรู", "สุสานของฟาโรห์คูฟู", "วิหารสำหรับสวดมนต์รวม", "หอสังเกตการณ์ทางการเกษตร"],
+        correctIndex: 1
+    },
+    {
+        id: "e5",
+        categoryId: "egypt",
+        name: "อักษรเฮียโรกลิฟิก",
+        subName: "(Hieroglyphics)",
+        icon: "📝",
+        era: "อียิปต์โบราณ",
+        description: "ระบบการเขียนโบราณของอียิปต์ที่ใช้ภาพสัญลักษณ์แทนคำ รูปร่าง หรือเสียง มักจะถูกจารึกลงบนผนังวิหารและสุสานสำคัญ",
+        funFact: "คำว่า เฮียโรกลิฟิก มีความหมายว่า 'อักษรรักษาความศักดิ์สิทธิ์' หรือการสลักศักดิ์สิทธิ์",
+        question: "อักษรเฮียโรกลิฟิกมีลักษณะเด่นอย่างไร?",
+        options: ["ใช้อักษรละตินแบบสั้น", "ใช้ภาพสัญลักษณ์แทนคำและเสียง", "ใช้การเจาะรูบนแผ่นดินเผา", "ใช้ตัวเลขสัญลักษณ์รูปดาว"],
+        correctIndex: 1
+    },
+    {
+        id: "e6",
+        categoryId: "egypt",
+        name: "กระดาษปาปิรุส",
+        subName: "(Papyrus)",
+        icon: "📜",
+        era: "อียิปต์โบราณ",
+        description: "กระดาษชนิดแรกๆ ของโลก ทำจากลำต้นของต้นปาปิรุสที่เติบโตตามริมฝั่งแม่น้ำไนล์ นำมาสานและอัดเป็นแผ่นสำหรับบันทึกข้อความ",
+        funFact: "คำว่า Paper ในภาษาอังกฤษมีรากศัพท์มาจากคำว่า Papyrus นั่นเอง",
+        question: "กระดาษปาปิรุสทำมาจากวัตถุดิบชนิดใด?",
+        options: ["เยื่อไม้ป่าสน", "ลำต้นของต้นปาปิรุสริมแม่น้ำไนล์", "หนังสัตว์ตากแห้ง", "เส้นใยผ้าฝ้ายผสมดินเหนียว"],
+        correctIndex: 1
+    },
+    {
+        id: "e7",
+        categoryId: "egypt",
+        name: "สฟิงซ์แห่งกีซา",
+        subName: "(Great Sphinx)",
+        icon: "🦁",
+        era: "อียิปต์โบราณ",
+        description: "รูปสลักหินแกะสลักขนาดใหญ่มีตัวเป็นสิงโตและมีศีรษะเป็นมนุษย์ เชื่อว่าตั้งอยู่เพื่อเฝ้ารักษาสุสานพีระมิดแห่งกีซา",
+        funFact: "สฟิงซ์แห่งกีซาแกะสลักขึ้นจากหินปูนก้อนใหญ่ก้อนเดียวในธรรมชาติ",
+        question: "สฟิงซ์แห่งกีซามีลักษณะผสมผสานระหว่างสิ่งใด?",
+        options: ["หัวนกและตัวคน", "หัวมนุษย์และตัวสิงโต", "หัวงูและตัวม้า", "หัวสิงโตและตัวนกอินทรี"],
+        correctIndex: 1
+    },
+    {
+        id: "e8",
+        categoryId: "egypt",
+        name: "เรือสุริยะ",
+        subName: "(Solar Barge)",
+        icon: "⛵",
+        era: "อียิปต์โบราณ",
+        description: "เรือไม้ขนาดใหญ่ที่ฝังไว้ข้างพีระมิด ตามความเชื่อเพื่อให้ฟาโรห์ใช้เดินทางข้ามท้องฟ้าไปพร้อมกับเทพเจ้าดวงอาทิตย์ในโลกหลังความตาย",
+        funFact: "เรือสุริยะถูกถอดชิ้นส่วนไม้ออกเป็นมากกว่า 1,200 ชิ้น และประกอบกลับคืนได้อย่างสมบูรณ์",
+        question: "ตามความเชื่ออียิปต์โบราณ เรือสุริยะสร้างขึ้นไว้เพื่ออะไร?",
+        options: ["ใช้ทำการค้ากับต่างแดน", "พาฟาโรห์เดินทางข้ามท้องฟ้าในโลกหลังความตาย", "ใช้ในการจับปลาในแม่น้ำไนล์", "ใช้แข่งขันทหารเรือ"],
+        correctIndex: 1
+    },
+    {
+        id: "e9",
+        categoryId: "egypt",
+        name: "มงกุฎสองภพ",
+        subName: "(Pschent Crown)",
+        icon: "🎩",
+        era: "อียิปต์โบราณ",
+        description: "มงกุฎที่เกิดจากการรวมมงกุฎสีขาวแห่งอียิปต์บน และมงกุฎสีแดงแห่งอียิปต์ล่าง เป็นสัญลักษณ์แสดงความเป็นหนึ่งเดียวของอาณาจักร",
+        funFact: "ผู้ที่เริ่มสวมมงกุฎนี้เป็นคนแรกคือ ฟาโรห์นาร์เมอร์ ผู้รวมอียิปต์ทั้งสองส่วนเข้าด้วยกัน",
+        question: "มงกุฎสองภพมีความหมายสำคัญอย่างไรทางการเมืองอียิปต์?",
+        options: ["สัญลักษณ์การแบ่งแยกอาณาจักร", "สัญลักษณ์การรวมอียิปต์บนและอียิปต์ล่างเข้าด้วยกัน", "สัญลักษณ์ตำแหน่งนักบวชสูงสุด", "สัญลักษณ์รับขวัญแม่ทัพ"],
+        correctIndex: 1
+    },
+    {
+        id: "e10",
+        categoryId: "egypt",
+        name: "ศิลาโรเซตตา",
+        subName: "(Rosetta Stone)",
+        icon: "🪨",
+        era: "อียิปต์โบราณ",
+        description: "แผ่นศิลาที่จารึกข้อความเดียวกันเป็น 3 ภาษา รวมถึงภาษากรีกโบราณ ทำให้นักประวัติศาสตร์สามารถแปลและอ่านอักษรเฮียโรกลิฟิกได้สำเร็จ",
+        funFact: "หากไม่มีศิลาชิ้นนี้ เราอาจยังไม่สามารถอ่านเรื่องราวที่สลักตามผนังอียิปต์โบราณได้จนถึงปัจจุบัน",
+        question: "ความสำคัญสูงสุดของศิลาโรเซตตาคืออะไร?",
+        options: ["เป็นแผนที่ขุมทรัพย์ฟาโรห์", "เป็นกุญแจสำคัญในการแปลอ่านอักษรเฮียโรกลิฟิก", "เป็นกฎหมายฉบับแรกของโลก", "เป็นตราประทับสินค้า"],
+        correctIndex: 1
+    },
+
+    // --- กรีกโบราณ (10 รายการ) ---
+    {
+        id: "g1",
+        categoryId: "greece",
+        name: "วิหารพาร์เธนอน",
+        subName: "(Parthenon)",
+        icon: "🏛️",
+        era: "กรีกโบราณ",
+        description: "วิหารหินอ่อนสีขาวตั้งอยู่บนเนินเขาอโครโพลิสในกรุงเอเธนส์ สร้างขึ้นเพื่ออุทิศให้แก่เทพีอาเธนา เทพีแห่งปัญญาและสงคราม",
+        funFact: "เสาของวิหารพาร์เธนอนไม่ได้ตรงเป๊ะ แต่ถูกสร้างให้เอียงและป่องตรงกลางเล็กน้อยเพื่อหลอกตาให้ดูตรงสมบูรณ์แบบ",
+        question: "วิหารพาร์เธนอนสร้างขึ้นเพื่ออุทิศให้แก่เทพองค์ใด?",
+        options: ["เทพเจ้าซุส", "เทพีอาเธนา", "เทพโพไซดอน", "เทพอะพอลโล"],
+        correctIndex: 1
+    },
+    {
+        id: "g2",
+        categoryId: "greece",
+        name: "แจกันลายดำ",
+        subName: "(Black-figure Pottery)",
+        icon: "🏺",
+        era: "กรีกโบราณ",
+        description: "ภาชนะดินเผาที่เขียนภาพเล่าเรื่องราวเทพปกรณัมและชีวิตประจำวันด้วยสีดำ เป็นสื่อบันทึกประวัติศาสตร์ที่สำคัญของกรีก",
+        funFact: "ช่างปฏิมากรกรีกมักจะลงชื่อตัวเองไว้บนแจกัน ทำให้เราทราบชื่อช่างฝีมือในอดีตมากมาย",
+        question: "ภาพวาดบนแจกันลายดำของกรีกมักบอกเล่าเรื่องราวเกี่ยวกับอะไร?",
+        options: ["ตำราทำอาหาร", "เรื่องราวเทพปกรณัมและชีวิตประจำวัน", "แผนที่การเดินทางทางเรือ", "รายชื่อกษัตริย์ต่างชาติ"],
+        correctIndex: 1
+    },
+    {
+        id: "g3",
+        categoryId: "greece",
+        name: "ช่อไม้มะกอกโอลิมปิก",
+        subName: "(Olive Wreath)",
+        icon: "🌿",
+        era: "กรีกโบราณ",
+        description: "มงกุฎใบมะกอกป่าที่เป็นรางวัลสูงสุดสำหรับผู้ชนะการแข่งขันกีฬาโอลิมปิกโบราณ สะท้อนถึงเกียรติยศ สันติภาพ และความชื่นชม",
+        funFact: "ในยุคโอลิมปิกโบราณ ผู้ชนะจะไม่ได้รับเหรียญทอง แต่จะได้ช่อไม้มะกอกและการยกย่องเป็นวีรบุรุษของเมือง",
+        question: "ช่อไม้มะกอกในกีฬาโอลิมปิกโบราณมีความหมายถึงสิ่งใด?",
+        options: ["ความร่ำรวยด้านทรัพย์สิน", "รางวัลเกียรติยศและสันติภาพของผู้ชนะ", "สัญลักษณ์รับประกันตำแหน่งทหาร", "สิทธิการเล่าเรียนฟรี"],
+        correctIndex: 1
+    },
+    {
+        id: "g4",
+        categoryId: "greece",
+        name: "รูปสลักเทพเจ้าซุส",
+        subName: "(Statue of Zeus at Olympia)",
+        icon: "⚡",
+        era: "กรีกโบราณ",
+        description: "รูปสลักขนาดใหญ่ประดับด้วยงาช้างและทองคำ ตั้งอยู่ที่เมืองโอลิมเปีย ถูกจัดให้เป็นหนึ่งในเจ็ดสิ่งมหัศจรรย์ของโลกยุคโบราณ",
+        funFact: "รูปสลักนั่งนี้น่าประทับใจมาก จนผู้คนกล่าวกันว่าถ้าเทพซุสยืนขึ้น ชายคาของวิหารคงพังลงมา",
+        question: "รูปสลักเทพเจ้าซุสแห่งโอลิมเปียทำจากวัสดุหลักใด?",
+        options: ["สัมฤทธิ์และหินปูน", "งาช้างและทองคำ", "ดินเผาปูพื้น", "หินอ่อนดำ"],
+        correctIndex: 1
+    },
+    {
+        id: "g5",
+        categoryId: "greece",
+        name: "ม้าไม้เมืองทรอย",
+        subName: "(Trojan Horse)",
+        icon: "🐴",
+        era: "กรีกโบราณ",
+        description: "กลยุทธ์แยบยลในมหากาพย์ของโฮเมอร์ โดยฝ่ายกรีกสร้างม้าไม้ซ่อนทหารไว้ข้างในแล้วแกล้งยิ้มย้ายถอยทัพ เพื่อหลอกเข้าเมืองทรอย",
+        funFact: "ม้าไม้กลายเป็นสัญลักษณ์สากลของความย้อนเกล็ด และเป็นที่มาของคำว่า 'ไวรัสม้าทรอย' ในคอมพิวเตอร์",
+        question: "ม้าไม้เมืองทรอยถูกใช้ทำสิ่งใดในตำนานกรีก?",
+        options: ["เป็นของขวัญผูกมิตรภาพ", "ซ่อนทหารกรีกไว้ข้างในเพื่อบุกเข้าเมืองทรอย", "ใช้ขนส่งเสบียงอาหาร", "ใช้ในพิธีเคารพเทพเจ้าทะเล"],
+        correctIndex: 1
+    },
+    {
+        id: "g6",
+        categoryId: "greece",
+        name: "โรงละครแห่งเอพิดอรัส",
+        subName: "(Theater of Epidaurus)",
+        icon: "🎭",
+        era: "กรีกโบราณ",
+        description: "โรงละครกลางแจ้งครึ่งวงกลมที่มีระบบเสียง (Acoustics) ไร้ที่ติ เสียงกระซิบจากเวทีด้านล่างสามารถได้ยินชัดเจนถึงแถวบนสุด",
+        funFact: "โรงละครนี้บรรจุผู้ชมได้มากกว่า 14,000 คน โดยไม่ต้องใช้อุปกรณ์ขยายเสียงใดๆ",
+        question: "จุดเด่นที่สุดของโรงละครแห่งเอพิดอรัสคืออะไร?",
+        options: ["มีหลังคาเปิดปิดได้", "ระบบเสียงธรรมชาติที่ได้ยินชัดเจนทุกที่นั่ง", "สร้างจากไม้ยอมรับแรงสั่นสะเทือน", "มีสระน้ำกลางเวที"],
+        correctIndex: 1
+    },
+    {
+        id: "g7",
+        categoryId: "greece",
+        name: "เหรียญเงินดรากมา",
+        subName: "(Drachma Coin)",
+        icon: "🪙",
+        era: "กรีกโบราณ",
+        description: "เงินตรามาตรฐานของกรีกโบราณ ด้านหนึ่งมักปั๊มรูปเทพีอาเธนา และอีกด้านเป็นรูปนกเค้าแมว สัญลักษณ์แห่งความรู้และปัญญา",
+        funFact: "รูปนกเค้าแมวบนเหรียญดรากมาโบราณ ถูกนำมาใช้อยู่บนเหรียญ 1 ยูโรของประเทศกรีซในปัจจุบัน",
+        question: "รูปสัตว์ชนิดใดที่มักปรากฏบนเหรียญดรากมาแห่งเอเธนส์?",
+        options: ["นกอินทรี", "นกเค้าแมว", "สิงโต", "ม้ามีปีก"],
+        correctIndex: 1
+    },
+    {
+        id: "g8",
+        categoryId: "greece",
+        name: "ชุดเกราะฮอปลิต์",
+        subName: "(Hoplite Armor)",
+        icon: "🛡️",
+        era: "กรีกโบราณ",
+        description: "ยุทธภัณฑ์ครบชุดของทหารราบกรีก ประกอบด้วยโล่รูปวงกลมขนาดใหญ่ (Hoplon) หมวกเกราะสัมฤทธิ์ และหอกยาว",
+        funFact: "ทหารกรีกจะยืนเรียงแถวต่อกันแน่นขนัดเรียกว่า 'ฟาแลงกซ์' (Phalanx) โดยใช้โล่ประสานกันเป็นกำแพง",
+        question: "การจัดแถวจรยุทธ์อันโด่งดังของทหารฮอปลิต์กรีกเรียกว่าอะไร?",
+        options: ["เต่าโรมัน", "ฟาแลงกซ์ (Phalanx)", "ค่ายกลวงแหวน", "กองทัพขี่ม้า"],
+        correctIndex: 1
+    },
+    {
+        id: "g9",
+        categoryId: "greece",
+        name: "ม้วนคัมภีร์คณิตศาสตร์ยูคลิด",
+        subName: "(Euclid's Elements)",
+        icon: "📐",
+        era: "กรีกโบราณ",
+        description: "ผลงานรวบรวมความรู้เรขาคณิตและคณิตศาสตร์โดย ยูคลิด นักคณิตศาสตร์ชาวกรีก ซึ่งกลายเป็นตำราเรียนพื้นฐานของโลกมานานนับพันปี",
+        funFact: "คัมภีร์นี้เป็นหนึ่งในหนังสือที่ได้รับการตีพิมพ์และศึกษามากที่สุดในประวัติศาสตร์รองจากคัมภีร์ไบเบิล",
+        question: "ยูคลิด (Euclid) นักคิดชาวกรีกมีชื่อเสียงโดดเด่นในสาขาวิชาใด?",
+        options: ["การดนตรี", "เรขาคณิตและคณิตศาสตร์", "การแพทย์แผนโบราณ", "การเดินเรือ"],
+        correctIndex: 1
+    },
+    {
+        id: "g10",
+        categoryId: "greece",
+        name: "แท่นจุดไฟโอลิมปิก",
+        subName: "(Olympic Flame Altar)",
+        icon: "🔥",
+        era: "กรีกโบราณ",
+        description: "แท่นจุดไฟศักดิ์สิทธิ์ที่จะถูกจุดไว้ตลอดช่วงการแข่งขันเพื่อเป็นเกียรติแก่เทพเจ้า สะท้อนถึงสันติภาพและการพักสงครามชั่วคราว",
+        funFact: "ในยุคกรีกโบราณ เมื่อไฟโอลิมปิกจุดขึ้น นครรัฐต่างๆ ที่ทำสงครามกันจะต้องหยุดรบกันทันที",
+        question: "ธรรมเนียมการจุดไฟโอลิมปิกมีความหมายแฝงถึงสิ่งใด?",
+        options: ["การประกาศสงคราม", "การพักสงครามและความสงบสุขชั่วคราว", "การบูชายัญสัตว์", "การเริ่มฤดูกาลเก็บเกี่ยว"],
+        correctIndex: 1
+    },
+
+    // --- โรมันโบราณ (10 รายการ) ---
+    {
+        id: "r1",
+        categoryId: "rome",
+        name: "โคลอสเซียม",
+        subName: "(Colosseum)",
+        icon: "🏟️",
+        era: "โรมันโบราณ",
+        description: "สนามกีฬากลางแจ้งขนาดมหึมาใจกลางกรุงโรม ใช้เป็นสังเวียนประลองของการ์ดิเอเตอร์และการแสดงต่อสู้ต่างๆ บรรจุคนได้กว่า 50,000 คน",
+        funFact: "โคลอสเซียมมีระบบประตูกลใต้อัฒจันทร์ที่สามารถปล่อยสัตว์ร้ายขึ้นมาระหว่างการประลองได้อย่างตื่นตาตื่นใจ",
+        question: "โคลอสเซียมแห่งกรุงโรมสร้างขึ้นเพื่อใช้วัตถุประสงค์ใด?",
+        options: ["เป็นที่ทำการวุฒิสภา", "เป็นสังเวียนประลองและการแสดงกลางแจ้ง", "เป็นวิหารประจําเมือง", "เป็นคลังเก็บอาวุธ"],
+        correctIndex: 1
+    },
+    {
+        id: "r2",
+        categoryId: "rome",
+        name: "ท่อส่งน้ำโรมัน",
+        subName: "(Roman Aqueduct)",
+        icon: "🌉",
+        era: "โรมันโบราณ",
+        description: "นวัตกรรมวิศวกรรมการลำเลียงน้ำสะอาดจากแหล่งน้ำไกลหลายสิบกิโลเมตร เข้าสู่เมืองด้วยการคำนวณความเอียงของแรงโน้มถ่วง",
+        funFact: "ท่อส่งน้ำบางแห่งยังคงใช้งานส่งน้ำได้จริงจนถึงยุคปัจจุบันเนื่องจากโครงสร้างสะพานโค้งอันแข็งแกร่ง",
+        question: "ท่อส่งน้ำโรมันใช้วิธีการใดในการลำเลียงน้ำเข้าสู่เมือง?",
+        options: ["ใช้กังหันลมฉุด", "ใช้แรงโน้มถ่วงและการคำนวณระดับความเอียง", "ใช้ไอน้ำดันดันน้ำ", "ใช้แรงงานทาสตัก"],
+        correctIndex: 1
+    },
+    {
+        id: "r3",
+        categoryId: "rome",
+        name: "ถนนแอพเพียน",
+        subName: "(Appian Way)",
+        icon: "🛣️",
+        era: "โรมันโบราณ",
+        description: "หนึ่งในถนนปูหินสายแรกและสำคัญที่สุดของจักรวรรดิโรมัน ปูด้วยหินเป็นชั้นๆ อย่างแน่นหนา เชื่อมการเดินทางและการเดินทัพ",
+        funFact: "เป็นที่มาของคำกล่าวโบราณที่ว่า 'ถนนทุกสายมุ่งสู่กรุงโรม'",
+        question: "ถนนปูหินของโรมันมีความสำคัญอย่างไรต่อจักรวรรดิ?",
+        options: ["ใช้เดินรถแข่งเท่านั้น", "ช่วยในการคมนาคม ขนส่งสินค้า และเคลื่อนทัพได้รวดเร็ว", "กั้นเขตแดนไม่ให้ศัตรูเข้า", "ใช้สำหรับทำพิธีศาสนาเท่านั้น"],
+        correctIndex: 1
+    },
+    {
+        id: "r4",
+        categoryId: "rome",
+        name: "วิหารแพนธีออน",
+        subName: "(Pantheon)",
+        icon: "🏛️",
+        era: "โรมันโบราณ",
+        description: "วิหารสร้างขึ้นเพื่อเทพเจ้าทั้งปวง มีจุดเด่นคือโดมคอนกรีตขนาดใหญ่ที่มีช่องวงกลมเปิดรับแสง (Oculus) ตรงกลางโดม",
+        funFact: "โดมคอนกรีตไม่เสริมเหล็กของแพนธีออน ยังคงเป็นโดมคอนกรีตลักษณะนี้ที่ใหญ่ที่สุดในโลก",
+        question: "เอกลักษณ์ทางสถาปัตยกรรมของวิหารแพนธีออนคืออะไร?",
+        options: ["ทำจากไม้ซุงทั้งหลัง", "โดมคอนกรีตขนาดใหญ่พร้อมช่องเปิดรับแสงตรงกลาง", "สร้างอยู่ใต้ดิน", "มีเสาแกะสลักรูปงู"],
+        correctIndex: 1
+    },
+    {
+        id: "r5",
+        categoryId: "rome",
+        name: "เหรียญทองคำออเรอุส",
+        subName: "(Aureus Coin)",
+        icon: "🪙",
+        era: "โรมันโบราณ",
+        description: "เหรียญทองคำบริสุทธิ์ของโรมัน ด้านหนึ่งปั๊มพระรูปของจักรพรรดิ ใช้เป็นสื่อกลางในการค้าขายและกระจายข่าวสารทั่วจักรวรรดิ",
+        funFact: "การสลักใบหน้าจักรพรรดิบนเหรียญ คือวิธีที่คนในจักรวรรดิอันกว้างใหญ่ได้เห็นหน้าผู้นำของตนเอง",
+        question: "นอกจากใช้เป็นเงินตรา เหรียญโรมันยังมีประโยชน์อย่างไร?",
+        options: ["เป็นของเล่นเด็ก", "ใช้กระจายข่าวและเผยแพร่ใบหน้าของจักรพรรดิ", "ใช้แทนบัตรผ่านประตู", "ใช้ขัดถูทำความสะอาด"],
+        correctIndex: 1
+    },
+    {
+        id: "r6",
+        categoryId: "rome",
+        name: "เกราะหุ้มอกโรมัน",
+        subName: "(Lorica Segmentata)",
+        icon: "🛡️",
+        era: "โรมันโบราณ",
+        description: "ชุดเกราะเหล็กแผ่นที่ยึดกันด้วยสายรัดหนัง ช่วยยืดหยุ่นในการเคลื่อนไหวและป้องกันการฟันของทหารโรมันได้อย่างดีเยี่ยม",
+        funFact: "ชุดเกราะนี้สามารถถอดแยกชิ้นส่วนเพื่อขวานพับเก็บและพกพาได้สะดวกเมื่อต้องเดินทัพไกล",
+        question: "ชุดเกราะเหล็กแผ่นของทหารโรมันมีข้อดีอย่างไร?",
+        options: ["เบาเหมือนผ้า", "ยืดหยุ่นเคลื่อนไหวสะดวกและป้องกันการฟันได้ดี", "สามารถลอยน้ำได้", "สะท้อนแสงทำให้ศัตรูตาบอด"],
+        correctIndex: 1
+    },
+    {
+        id: "r7",
+        categoryId: "rome",
+        name: "ชุดโทกา",
+        subName: "(Toga)",
+        icon: "🥋",
+        era: "โรมันโบราณ",
+        description: "เครื่องแต่งกายผ้าคลุมยาวทำจากขนสัตว์สีขาว ซึ่งเป็นสัญลักษณ์แสดงถึงสถานะอันมีเกียรติของพลเมืองชายชาวโรมัน",
+        funFact: "ทาสและผู้ที่ไม่ใช่พลเมืองโรมันจะไม่มีสิทธิสวมชุดโทกาอย่างเด็ดขาด",
+        question: "ชุดโทกา (Toga) ในสังคมโรมันโบราณแสดงถึงสิ่งใด?",
+        options: ["ความเป็นทาส", "สถานะการเป็นพลเมืองโรมันชั้นสูง", "ความเป็นนักสู้การ์ดิเอเตอร์", "ตำแหน่งนักบวชหญิง"],
+        correctIndex: 1
+    },
+    {
+        id: "r8",
+        categoryId: "rome",
+        name: "ภาพโมเสกปูพื้น",
+        subName: "(Roman Mosaic)",
+        icon: "🖼️",
+        era: "โรมันโบราณ",
+        description: "ศิลปะตกแต่งพื้นและผนังโดยนำชิ้นหินหรือแก้วสีชิ้นเล็กๆ (Tesserae) มาต่อเรียงกันเป็นภาพประวัติศาสตร์หรือธรรมชาติ",
+        funFact: "ภาพโมเสกโรมันมีความทนทานสูงมากจนคงอยู่มาให้เราเห็นในสภาพสมบูรณ์หลังผ่านไปกว่า 2,000 ปี",
+        question: "ภาพโมเสกของโรมันสร้างขึ้นด้วยเทคนิคใด?",
+        options: ["เขียนด้วยสีน้ำมัน", "นำหินหรือแก้วสีชิ้นเล็กๆ มาต่อเรียงกัน", "ใช้การเผาดินเหนียวแปรรูป", "สลักลงบนแผ่นไม้"],
+        correctIndex: 1
+    },
+    {
+        id: "r9",
+        categoryId: "rome",
+        name: "ตราประทับวุฒิสภา SPQR",
+        subName: "(SPQR Standard)",
+        icon: "🚩",
+        era: "โรมันโบราณ",
+        description: "ตัวอักษรย่อย่อมาจาก 'Senatus Populusque Romanus' หมายถึง 'วุฒิสภาและประชาชนชาวโรม' อันเป็นตราสัญลักษณ์แห่งอำนาจรัฐ",
+        funFact: "ตรา SPQR ยังคงปรากฏอยู่บนท่อระบายน้ำและตราประจำเมืองของกรุงโรมในปัจจุบัน",
+        question: "คำว่า SPQR ตัวอักษรย่อบนตราสัญลักษณ์โรมันมีความหมายถึงอะไร?",
+        options: ["จักรพรรดิและกองทัพ", "วุฒิสภาและประชาชนชาวโรม", "เทพเจ้าและผู้สร้างเมือง", "กฎหมายและความยุติธรรม"],
+        correctIndex: 1
+    },
+    {
+        id: "r10",
+        categoryId: "rome",
+        name: "คอนกรีตโรมัน",
+        subName: "(Roman Concrete)",
+        icon: "🧱",
+        era: "โรมันโบราณ",
+        description: "ส่วนผสมปูนโบราณที่ใช้อย่างขี้เถ้าภูเขาไฟ ทำให้มีความแข็งแกร่งทนทานมาก สามารถแข็งตัวได้แม้กระทั่งใต้น้ำ",
+        funFact: "คอนกรีตโรมันยิิ่งเวลาผ่านไปและสัมผัสกับน้ำทะเล กลับยิ่งแข็งแกร่งขึ้นต่างจากคอนกรีตยุคปัจจุบัน",
+        question: "ส่วนผสมพิเศษใดที่ทำให้คอนกรีตโรมันแข็งแกร่งและทนทานใต้น้ำ?",
+        options: ["ขี้เถ้าภูเขาไฟ", "ผงทองคำละเอียด", "ยางไม้ป่า", "เปลือกหอยบด"],
+        correctIndex: 0
+    },
+
+    // --- ความเชื่อมโยงตะวันออก–ตะวันตก (10 รายการ) ---
+    {
+        id: "ew1",
+        categoryId: "eastwest",
+        name: "เส้นทางสายไหม",
+        subName: "(Silk Road)",
+        icon: "🐪",
+        era: "การเชื่อมโยงโบราณ",
+        description: "เครือข่ายเส้นทางการค้าและแลกเปลี่ยนวัฒนธรรมทางบก เชื่อมโยงเอเชียตะวันออกกับเมดิเตอร์เรเนียนและยุโรป",
+        funFact: "นอกจากผ้าไหมแล้ว เส้นทางนี้ยังเป็นช่องทางถ่ายทอดศาสนา เทคโนโลยี และศาสตราวุธข้ามทวีป",
+        question: "เส้นทางสายไหมมีบทบาทสำคัญที่สุดอย่างไรในประวัติศาสตร์โลก?",
+        options: ["เป็นเส้นทางเดินทัพทางเรือ", "เชื่อมโยงการค้าและถ่ายทอดวัฒนธรรมระหว่างตะวันออกกับตะวันตก", "ใช้เป็นเส้นทางขุดทองคำเท่านั้น", "เป็นแนวเขตกันชนสงคราม"],
+        correctIndex: 1
+    },
+    {
+        id: "ew2",
+        categoryId: "eastwest",
+        name: "เครื่องถ้วยชามการค้าโบราณ",
+        subName: "(Trade Ceramics)",
+        icon: "🏺",
+        era: "การเชื่อมโยงโบราณ",
+        description: "เครื่องปั้นดินเผาและเซรามิกที่ส่งออกผ่านเรือการค้าทางทะเล เป็นหลักฐานสำคัญที่แสดงการติดต่อค้าระหว่างตะวันออกกับตะวันตก",
+        funFact: "ซากเรือโบราณใต้น้ำมักถูกค้นพบพร้อมเครื่องถ้วยชามบรรจุแน่นเต็มลำเรือ",
+        question: "เครื่องถ้วยชามการค้าโบราณเป็นหลักฐานสำคัญของสิ่งใด?",
+        options: ["การค้าระหว่างประเทศทางทะเล", "เทคโนโลยีการบินโบราณ", "การสถาปนาราชวงศ์", "พิธีกรรมเกี่ยวกับดวงอาทิตย์"],
+        correctIndex: 0
+    },
+    {
+        id: "ew3",
+        categoryId: "eastwest",
+        name: "เหรียญโรมันในเอเชีย",
+        subName: "(Roman Coins in Asia)",
+        icon: "🪙",
+        era: "การเชื่อมโยงโบราณ",
+        description: "การค้นพบเหรียญเงินและทองคำของจักรวรรดิโรมันในอินเดียและเอเชียตะวันออกเฉียงใต้ แสดงถึงการแลกเปลี่ยนสินค้าทางทะเลที่กว้างไกล",
+        funFact: "เหรียญโรมันถูกค้นพบแม้กระทั่งในโบราณสถานแถบประเทศไทยและเวียดนาม",
+        question: "การค้นพบเหรียญโรมันในดินแดนเอเชียเป็นหลักฐานยืนยันเรื่องใด?",
+        options: ["โรมันเคยปกครองเอเชีย", "มีการแลกเปลี่ยนทางการค้าระหว่างโรมันกับเอเชีย", "โรมันตั้งค่ายทหารในเอเชีย", "เหรียญถูกปลอมแปลงโดยช่างชาวบ้าน"],
+        correctIndex: 1
+    },
+    {
+        id: "ew4",
+        categoryId: "eastwest",
+        name: "แผนที่ปโตเลมี",
+        subName: "(Ptolemy's Map)",
+        icon: "🗺️",
+        era: "การเชื่อมโยงโบราณ",
+        description: "แผนที่โลกยุคโบราณรวบรวมโดยนักภูมิศาสตร์ชาวกรีก-อียิปต์ แสดงพิกัดของทวีปยุโรป แอฟริกา และเอเชีย เป็นก้าวสำคัญของภูมิศาสตร์",
+        funFact: "แผนที่ของปโตเลมีถูกนำกลับมาศึกษาใช้อีกครั้งในยุคสำรวจทางทะเลของยุโรป",
+        question: "แผนที่ปโตเลมีมีความสำคัญอย่างไร?",
+        options: ["เป็นแผนที่ดวงดาว", "เป็นแผนที่แสดงพิกัดทวีปเชื่อมโยงโลกยุคโบราณ", "เป็นแผนผังวิหารอียิปต์", "เป็นแผนที่เส้นทางใต้ดิน"],
+        correctIndex: 1
+    },
+    {
+        id: "ew5",
+        categoryId: "eastwest",
+        name: "ศิลปะคันธาระ",
+        subName: "(Gandhara Art)",
+        icon: "🪷",
+        era: "การเชื่อมโยงโบราณ",
+        description: "ศิลปะพุทธปฏิมาที่ผสมผสานระหว่างพุทธศาสนาจากตะวันออก กับเทคนิคการแกะสลักพริ้วไหวแบบกรีกโบราณ",
+        funFact: "พระพุทธรูปยุคแรกๆ ในศิลปะคันธาระมีจีวรพริ้วไหวและใบหน้าคล้ายกับเทพเจ้าอะพอลโลของกรีก",
+        question: "ศิลปะคันธาระเกิดจากการผสมผสานระหว่างอารยธรรมใด?",
+        options: ["จีนและอียิปต์", "พุทธศาสนาและเทคนิคประติมากรรมกรีก", "โรมันและมายา", "อัสซีเรียและเปอร์เซีย"],
+        correctIndex: 1
+    },
+    {
+        id: "ew6",
+        categoryId: "eastwest",
+        name: "เครื่องเทศพริกไทยดำ",
+        subName: "(Black Pepper Trade)",
+        icon: "🧂",
+        era: "การเชื่อมโยงโบราณ",
+        description: "เครื่องเทศจากตะวันออกที่มีค่าสูงยิ่งกว่าทองคำในจักรวรรดิโรมัน นำไปสู่เส้นทางการค้าเครื่องเทศข้ามมหาสมุทรอินเดีย",
+        funFact: "ชาวโรมันหลงใหลในพริกไทยดำมากจนนำไปใช้ปรุงรสอาหารและของหวานแทบทุกชนิด",
+        question: "เครื่องเทศพริกไทยดำมีความสำคัญอย่างไรในอดีต?",
+        options: ["เป็นสินค้าราคาแพงที่ตะวันตกต้องการจากตะวันออก", "ใช้เป็นยารักษาโรคเท่านั้น", "ใช้เป็นสีย้อมผ้า", "ใช้แทนเชื้อเพลิงเรือ"],
+        correctIndex: 0
+    },
+    {
+        id: "ew7",
+        categoryId: "eastwest",
+        name: "เข็มทิศเดินทางโบราณ",
+        subName: "(Ancient Mariner's Compass)",
+        icon: "🧭",
+        era: "การเชื่อมโยงโบราณ",
+        description: "อุปกรณ์บอกทิศทางโดยใช้แถบแม่เหล็ก ช่วยให้นักเดินเรือสามารถนำเรือข้ามมหาสมุทรได้โดยไม่ต้องพึ่งพาการมองดวงดาวเพียงอย่างเดียว",
+        funFact: "เทคโนโลยีเข็มทิศได้รับการพัฒนาและส่งผ่านจากตะวันออกไปเปิดยุคการสำรวจโลกของตะวันตก",
+        question: "ประโยชน์สูงสุดของเข็มทิศเดินทางโบราณคืออะไร?",
+        options: ["บอกสภาพอากาศ", "ช่วยนำทางเดินเรือข้ามมหาสมุทรได้แม่นยำ", "ใช้วัดความลึกของน้ำ", "คำนวณเวลาพระอาทิตย์ขึ้น"],
+        correctIndex: 1
+    },
+    {
+        id: "ew8",
+        categoryId: "eastwest",
+        name: "เทคโนโลยีทำกระดาษ",
+        subName: "(Paper Making Tech)",
+        icon: "📜",
+        era: "การเชื่อมโยงโบราณ",
+        description: "การส่งผ่านภูมิปัญญาการทำกระดาษจากจีน ผ่านเส้นทางการค้าสู่โลกอาหรับและเมดิเตอร์เรเนียน เปลี่ยนแปลงการบันทึกความรู้ของโลก",
+        funFact: "การแพร่กระจายของกระดาษทำให้หนังสือมีราคาถูกลง และผู้คนสามารถเข้าถึงความรู้ได้แพร่หลายขึ้น",
+        question: "การแพร่กระจายของเทคโนโลยีทำกระดาษส่งผลอย่างไรต่อโลก?",
+        options: ["ทำให้การเขียนเสื่อมความนิยม", "ช่วยให้การบันทึกและการกระจายความรู้แพร่หลายขึ้น", "ทำให้เกิดขาดแคลนต้นไม้ทันที", "ใช้แทนการสร้างบ้าน"],
+        correctIndex: 1
+    },
+    {
+        id: "ew9",
+        categoryId: "eastwest",
+        name: "กองเรือการค้าโบราณ",
+        subName: "(Ancient Merchant Galleon)",
+        icon: "⛵",
+        era: "การเชื่อมโยงโบราณ",
+        description: "เรือเดินสมุทรขนาดใหญ่ที่ออกแบบให้รับลมมรสุมข้ามมหาสมุทรอินเดีย บรรทุกสินค้าล้ำค่าจากตะวันออกไปสู่ตลาดตะวันตก",
+        funFact: "พ่อค้าโบราณเรียนรู้การใช้ 'ลมมรสุม' เพื่อแล่นเรือไปและกลับตามฤดูกาลอย่างแม่นยำ",
+        question: "สิ่งใดคือปัจจัยสำคัญที่ช่วยให้กองเรือการค้าโบราณแล่นข้ามมหาสมุทรได้?",
+        options: ["เครื่องยนต์ไอน้ำ", "การเข้าใจและใช้วิธีแล่นเรือตามลมมรสุม", "การใช้ทาสพายเรือจำนวนหลายหมื่นคน", "กระแสน้ำไฟฟ้า"],
+        correctIndex: 1
+    },
+    {
+        id: "ew10",
+        categoryId: "eastwest",
+        name: "ศิลาจารึกสองภาษา",
+        subName: "(Bilingual Inscription)",
+        icon: "🪨",
+        era: "การเชื่อมโยงโบราณ",
+        description: "แผ่นศิลาจารึกข้อความสองภาษา เช่น กรีกและอารเมอิก พบในแถบเอเชียกลาง แสดงถึงการอยู่ร่วมกันและการสื่อสารข้ามอารยธรรม",
+        funFact: "พระเจ้าอโศกมหาราชทรงเคยสร้างจารึกเป็นภาษากรีกเพื่อเผยแผ่ธรรมะแก่ชาวกรีกในแถบเอเชียกลาง",
+        question: "ศิลาจารึกสองภาษาโบราณสะท้อนถึงสิ่งใด?",
+        options: ["ความขัดแย้งทางภาษา", "การสื่อสารและการแลกเปลี่ยนข้ามอารยธรรม", "การสูญหายของอักษรโบราณ", "การทดสอบวิชาเขียน"],
+        correctIndex: 1
+    }
+];
+
+// ความเชื่อมโยงทางประวัติศาสตร์ (Connections)
+const CONNECTIONS_DATA = [
+    {
+        title: "การเผยแพร่อารยธรรมภาษากรีกในอียิปต์",
+        item1: "e10", // ศิลาโรเซตตา
+        item2: "g7",  // เหรียญเงินดรากมา
+        description: "ในยุคปโตเลมี อารยธรรมกรีกได้เข้ามามีอิทธิพลในอียิปต์ เกิดการใช้ภาษากรีกคู่กับอักษรเฮียโรกลิฟิกในการบริหารราชการ"
+    },
+    {
+        title: "การบันทึกคลังปัญญาโบราณ",
+        item1: "e6",  // กระดาษปาปิรุส
+        item2: "g9",  // ม้วนคัมภีร์คณิตศาสตร์
+        description: "ความรู้เรขาคณิตและคณิตศาสตร์ของกรีก ถูกบันทึกและส่งต่อลงบนกระดาษปาปิรุสที่ผลิตจากอียิปต์"
+    },
+    {
+        title: "การสืบทอดสถาปัตยกรรมเสาคลาสสิก",
+        item1: "g1",  // วิหารพาร์เธนอน
+        item2: "r4",  // วิหารแพนธีออน
+        description: "สถาปนิกชาวโรมันได้รับแรงบันดาลใจจากเสาวิหารกรีก นำมาพัฒนาร่วมกับระบบโดมคอนกรีตอันแข็งแกร่ง"
+    },
+    {
+        title: "เครือข่ายเส้นทางการค้าและเงินตราสากล",
+        item1: "r5",  // เหรียญทองคำออเรอุส
+        item2: "ew3", // เหรียญโรมันในเอเชีย
+        description: "เหรียญเงินและทองคำของโรมันถูกแพร่กระจายผ่านเส้นทางการค้าทางทะเล นำมาซึ่งการแลกเปลี่ยนสินค้าล้ำค่ากับเอเชีย"
+    },
+    {
+        title: "การผสานพุทธศิลป์กับศิลปะกรีก",
+        item1: "g4",  // รูปสลักเทพเจ้าซุส
+        item2: "ew5", // ศิลปะคันธาระ
+        description: "ช่างฝีมือเชื้อสายกรีกในเอเชียกลาง ได้นำเทคนิคประติมากรรมแบบกรีกมาสร้างสรรค์รูปเคารพในพุทธศาสนาเป็นครั้งแรก"
+    }
+];
+
+// เหรียญตราความสำเร็จ (Achievements)
+const ACHIEVEMENTS_DATA = [
+    { id: "a1", title: "นักสะสมคนแรก", desc: "ค้นพบสิ่งจัดแสดง 5 ชิ้น", reqCount: 5, icon: "🏺" },
+    { id: "a2", title: "นักประวัติศาสตร์มือใหม่", desc: "ค้นพบสิ่งจัดแสดง 15 ชิ้น", reqCount: 15, icon: "📜" },
+    { id: "a3", title: "ผู้ดูแลพิพิธภัณฑ์", desc: "ค้นพบสิ่งจัดแสดง 30 ชิ้น", reqCount: 30, icon: "🏛️" },
+    { id: "a4", title: "นักเชื่อมโยง", desc: "ปลดล็อกความเชื่อมโยง 3 รายการ", reqConn: 3, icon: "🔗" },
+    { id: "a5", title: "นักประวัติศาสตร์ผู้ยิ่งใหญ่", desc: "สะสมครบทั้ง 40 ชิ้น", reqCount: 40, icon: "🌟" }
+];
+
+// ==========================================
+// STATE MANAGEMENT (ระบบบันทึกเกม)
+// ==========================================
+
+let gameState = {
+    unlockedItems: [], // รายการ ID ของโบราณวัตถุที่ปลดล็อกแล้ว
+    knowledgePoints: 0,
+    currentCategory: null,
+    currentItemId: null
+};
+
+function loadGame() {
+    const saved = localStorage.getItem("museum_of_time_save");
+    if (saved) {
+        try {
+            gameState = JSON.parse(saved);
+        } catch(e) {
+            console.error("Save state error");
+        }
+    }
+    updateTopBar();
+}
+
+function saveGame() {
+    localStorage.setItem("museum_of_time_save", JSON.stringify(gameState));
+    updateTopBar();
+}
+
+function resetProgress() {
+    if (confirm("⚠️ คุณต้องการล้างความคืบหน้าทั้งหมดเพื่อเริ่มใหม่ใช่หรือไม่?")) {
+        localStorage.removeItem("museum_of_time_save");
+        gameState = { unlockedItems: [], knowledgePoints: 0, currentCategory: null, currentItemId: null };
+        saveGame();
+        closeHelpModal();
+        closeModal();
+        showScreen('screen-home');
+        alert("🔄 ล้างข้อมูลเกมเรียบร้อยแล้ว");
+    }
+}
+
+// ==========================================
+// UI LOGIC & SCREEN ROUTING
+// ==========================================
+
+function updateTopBar() {
+    document.getElementById("knowledge-points").innerText = gameState.knowledgePoints;
+    document.getElementById("overall-progress-text").innerText = `${gameState.unlockedItems.length}/${ITEMS_DATA.length}`;
+    
+    const percent = Math.round((gameState.unlockedItems.length / ITEMS_DATA.length) * 100);
+    document.getElementById("overall-percent").innerText = `${percent}%`;
+    document.getElementById("overall-progress-bar").style.width = `${percent}%`;
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(screenId);
+    if (target) {
+        target.classList.add("active");
+    }
+
+    // Render Logic ตามหน้า
+    if (screenId === "screen-home") renderHome();
+    if (screenId === "screen-select-category") renderCategoryList();
+    if (screenId === "screen-museum") renderMuseumDisplay();
+    if (screenId === "screen-collection") renderCollection();
+    if (screenId === "screen-connections") renderConnections();
+    if (screenId === "screen-achievements") renderAchievements();
+}
+
+// Render หน้าแรก
+function renderHome() {
+    const previewContainer = document.getElementById("home-museum-preview");
+    previewContainer.innerHTML = "";
+
+    if (gameState.unlockedItems.length === 0) {
+        previewContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">พิพิธภัณฑ์ของคุณยังว่างเปล่า<br>กด "เริ่มสำรวจ" เพื่อค้นหาโบราณวัตถุชิ้นแรก!</p>`;
+        return;
+    }
+
+    // สุ่มแสดงสิ่งของที่ปลดล็อกแล้วสูงสุด 8 ชิ้น
+    const unlockedObjs = ITEMS_DATA.filter(i => gameState.unlockedItems.includes(i.id));
+    unlockedObjs.slice(0, 8).forEach(item => {
+        const iconDiv = document.createElement("div");
+        iconDiv.className = "preview-item-icon";
+        iconDiv.innerText = item.icon;
+        iconDiv.title = item.name;
+        iconDiv.onclick = () => openItemDetailModal(item);
+        previewContainer.appendChild(iconDiv);
+    });
+}
+
+// Render เลือกหมวดหมู่
+function renderCategoryList() {
+    const list = document.getElementById("category-list");
+    list.innerHTML = "";
+
+    Object.values(CATEGORIES).forEach(cat => {
+        const catItems = ITEMS_DATA.filter(i => i.categoryId === cat.id);
+        const unlockedCatItems = catItems.filter(i => gameState.unlockedItems.includes(i.id));
+        
+        const card = document.createElement("div");
+        card.className = `category-card ${cat.class}`;
+        card.innerHTML = `
+            <div class="cat-info">
+                <h3>${cat.icon} ${cat.name}</h3>
+                <p>ค้นพบแล้ว ${unlockedCatItems.length} / ${catItems.length} ชิ้น</p>
+                <div class="progress-bar-bg" style="width:140px; height:6px; margin-top:6px;">
+                    <div class="progress-bar-fill" style="width: ${(unlockedCatItems.length / catItems.length)*100}%"></div>
+                </div>
+            </div>
+            <button class="btn" onclick="selectCategory('${cat.id}')">เริ่มสำรวจ</button>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// เลือกหมวดหมู่เพื่อเริ่มสำรวจ (สุ่มข้อสอบจากรายการที่ยังไม่ได้ปลดล็อก)
+function selectCategory(catId) {
+    gameState.currentCategory = catId;
+    
+    const catItems = ITEMS_DATA.filter(i => i.categoryId === catId);
+    const lockedItems = catItems.filter(i => !gameState.unlockedItems.includes(i.id));
+
+    let targetItem;
+    if (lockedItems.length > 0) {
+        // สุ่มข้อที่ยังไม่ได้ปลดล็อก เพื่อไม่ให้วนกลับมาข้อเดิมทันทีที่ตอบผิด
+        const randomIndex = Math.floor(Math.random() * lockedItems.length);
+        targetItem = lockedItems[randomIndex];
+    } else {
+        // หากค้นพบครบหมดแล้วในหมวดนี้ สุ่มเลือกมาทบทวน
+        targetItem = catItems[Math.floor(Math.random() * catItems.length)];
+    }
+
+    gameState.currentItemId = targetItem.id;
+    showKnowledgePage(targetItem);
+}
+
+// แสดงหน้าความรู้ (Knowledge Screen)
+function showKnowledgePage(item) {
+    document.getElementById("learn-era-tag").innerText = item.era;
+    document.getElementById("learn-icon").innerText = item.icon;
+    document.getElementById("learn-title").innerText = item.name;
+    document.getElementById("learn-subname").innerText = item.subName;
+    document.getElementById("learn-description").innerText = item.description;
+    document.getElementById("learn-fun-fact").innerHTML = `💡 <b>เกร็ดความรู้:</b> ${item.funFact}`;
+
+    showScreen("screen-knowledge");
+}
+
+// เริ่มเฟสคำถาม
+function startQuestionPhase() {
+    const item = ITEMS_DATA.find(i => i.id === gameState.currentItemId);
+    if (!item) return;
+
+    document.getElementById("quiz-era-tag").innerText = item.era;
+    document.getElementById("quiz-question-text").innerText = item.question;
+
+    const container = document.getElementById("quiz-options-container");
+    container.innerHTML = "";
+
+    item.options.forEach((optText, index) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = optText;
+        btn.onclick = () => handleAnswer(index, item.correctIndex, btn);
+        container.appendChild(btn);
+    });
+
+    showScreen("screen-question");
+}
+
+// ตรวจคำตอบ
+function handleAnswer(selectedIndex, correctIndex, btnElement) {
+    const allBtns = document.querySelectorAll(".option-btn");
+    allBtns.forEach(b => b.onclick = null); // ปิดการกดซ้ำ
+
+    const item = ITEMS_DATA.find(i => i.id === gameState.currentItemId);
+
+    if (selectedIndex === correctIndex) {
+        btnElement.classList.add("correct");
+        
+        const isNewDiscovery = !gameState.unlockedItems.includes(item.id);
+        if (isNewDiscovery) {
+            gameState.unlockedItems.push(item.id);
+            gameState.knowledgePoints += 50;
+        } else {
+            gameState.knowledgePoints += 10;
+        }
+
+        saveGame();
+
+        setTimeout(() => {
+            openDiscoveryModal(item, isNewDiscovery);
+        }, 600);
+
+    } else {
+        btnElement.classList.add("wrong");
+        // ไม่เฉลยข้อถูกสีเขียว เพื่อไม่ให้จำคำตอบง่ายเกินไป
+
+        setTimeout(() => {
+            openWrongModal(item);
+        }, 800);
+    }
+}
+
+// Modal ตอบถูก / ค้นพบ
+function openDiscoveryModal(item, isNew) {
+    const modal = document.getElementById("modal-detail");
+    document.getElementById("modal-icon").innerText = item.icon;
+    document.getElementById("modal-title").innerText = isNew ? "🎉 ค้นพบสิ่งใหม่!" : "ถูกต้อง!";
+    document.getElementById("modal-subtitle").innerText = item.name + " " + item.subName;
+    
+    document.getElementById("modal-body-text").innerHTML = `
+        <p style="margin-bottom:8px;"><b>${item.description}</b></p>
+        <p style="color:var(--primary); font-size:0.85rem;">+${isNew ? '50' : '10'} คะแนนความรู้</p>
+    `;
+
+    document.getElementById("modal-action-buttons").innerHTML = `
+        <button class="btn btn-full" onclick="closeModal(); selectCategory('${gameState.currentCategory}');">สำรวจชิ้นต่อไป</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="closeModal(); showScreen('screen-museum');">ไปที่พิพิธภัณฑ์ของฉัน</button>
+    `;
+
+    modal.classList.add("active");
+}
+
+// Modal ตอบผิด (ปรับปรุงไม่เฉลยคำตอบ และให้สุ่มข้อสอบใหม่)
+function openWrongModal(item) {
+    const modal = document.getElementById("modal-detail");
+    document.getElementById("modal-icon").innerText = "❌";
+    document.getElementById("modal-title").innerText = "ยังไม่ถูกต้อง!";
+    document.getElementById("modal-subtitle").innerText = item.name;
+    
+    document.getElementById("modal-body-text").innerHTML = `
+        <p style="text-align: center; color: var(--text-muted);">
+            คำตอบยังไม่ถูกต้อง ลองกลับไปศึกษาเนื้อหาอีกครั้ง หรือสุ่มไปสำรวจข้ออื่นในหมวดหมู่นี้ก่อนได้เลย!
+        </p>
+    `;
+
+    document.getElementById("modal-action-buttons").innerHTML = `
+        <button class="btn btn-full" onclick="closeModal(); selectCategory('${gameState.currentCategory}');">🎲 สุ่มทำข้ออื่น</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="closeModal(); showKnowledgePage(ITEMS_DATA.find(i=>i.id==='${item.id}'));">📖 อ่านทบทวนข้อนี้อีกครั้ง</button>
+    `;
+
+    modal.classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("modal-detail").classList.remove("active");
+}
+
+function openHelpModal() {
+    document.getElementById("modal-help").classList.add("active");
+}
+
+function closeHelpModal() {
+    document.getElementById("modal-help").classList.remove("active");
+}
+
+// Render หน้าพิพิธภัณฑ์
+function renderMuseumDisplay() {
+    const grid = document.getElementById("museum-display-grid");
+    grid.innerHTML = "";
+
+    ITEMS_DATA.forEach(item => {
+        const isUnlocked = gameState.unlockedItems.includes(item.id);
+        const card = document.createElement("div");
+        card.className = `collect-card ${isUnlocked ? '' : 'locked'}`;
+        
+        card.innerHTML = `
+            <div class="icon">${isUnlocked ? item.icon : '❓'}</div>
+            <div class="name">${isUnlocked ? item.name : 'ยังไม่ค้นพบ'}</div>
+        `;
+
+        if (isUnlocked) {
+            card.onclick = () => openItemDetailModal(item);
+        }
+
+        grid.appendChild(card);
+    });
+}
+
+// Render หน้าคอลเลกชัน
+function renderCollection() {
+    const container = document.getElementById("collection-sections");
+    container.innerHTML = "";
+
+    Object.values(CATEGORIES).forEach(cat => {
+        const catItems = ITEMS_DATA.filter(i => i.categoryId === cat.id);
+        const unlockedCount = catItems.filter(i => gameState.unlockedItems.includes(i.id)).length;
+
+        const sec = document.createElement("div");
+        sec.style.marginBottom = "20px";
+        sec.innerHTML = `
+            <h3 style="font-size:1rem; margin-bottom:8px; color:var(--primary);">${cat.icon} ${cat.name} (${unlockedCount}/${catItems.length})</h3>
+            <div class="grid-collection" id="col-grid-${cat.id}"></div>
+        `;
+        container.appendChild(sec);
+
+        const grid = document.getElementById(`col-grid-${cat.id}`);
+        catItems.forEach(item => {
+            const isUnlocked = gameState.unlockedItems.includes(item.id);
+            const card = document.createElement("div");
+            card.className = `collect-card ${isUnlocked ? '' : 'locked'}`;
+            card.innerHTML = `
+                <div class="icon">${isUnlocked ? item.icon : '❓'}</div>
+                <div class="name">${isUnlocked ? item.name : '???'}</div>
+            `;
+            if (isUnlocked) {
+                card.onclick = () => openItemDetailModal(item);
+            }
+            grid.appendChild(card);
+        });
+    });
+}
+
+// Modal แสดงรายละเอียดสิ่งประดิษฐ์
+function openItemDetailModal(item) {
+    const modal = document.getElementById("modal-detail");
+    document.getElementById("modal-icon").innerText = item.icon;
+    document.getElementById("modal-title").innerText = item.name;
+    document.getElementById("modal-subtitle").innerText = `${item.subName} • ${item.era}`;
+    
+    document.getElementById("modal-body-text").innerHTML = `
+        <p style="margin-bottom:10px;">${item.description}</p>
+        <div class="fun-fact-box" style="margin:0;">💡 <b>เกร็ดความรู้:</b> ${item.funFact}</div>
+    `;
+
+    document.getElementById("modal-action-buttons").innerHTML = `
+        <button class="btn btn-full" onclick="closeModal()">ปิด</button>
+    `;
+
+    modal.classList.add("active");
+}
+
+// Render หน้าความเชื่อมโยง
+function renderConnections() {
+    const container = document.getElementById("connections-list");
+    container.innerHTML = "";
+
+    CONNECTIONS_DATA.forEach(conn => {
+        const item1 = ITEMS_DATA.find(i => i.id === conn.item1);
+        const item2 = ITEMS_DATA.find(i => i.id === conn.item2);
+        
+        const isUnlocked1 = gameState.unlockedItems.includes(conn.item1);
+        const isUnlocked2 = gameState.unlockedItems.includes(conn.item2);
+        const isConnected = isUnlocked1 && isUnlocked2;
+
+        const card = document.createElement("div");
+        card.className = "connection-card";
+        card.style.opacity = isConnected ? "1" : "0.5";
+
+        card.innerHTML = `
+            <h4 style="color:var(--primary); font-size:0.95rem;">${isConnected ? '🔗' : '🔒'} ${conn.title}</h4>
+            <div class="connection-flow">
+                <span>${isUnlocked1 ? item1.icon + ' ' + item1.name : '❓ ???'}</span>
+                <span>➔</span>
+                <span>${isUnlocked2 ? item2.icon + ' ' + item2.name : '❓ ???'}</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-main);">${isConnected ? conn.description : 'ค้นพบโบราณวัตถุทั้งสองชิ้นเพื่อเปิดความเชื่อมโยงนี้'}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+// Render หน้าความสำเร็จ
+function renderAchievements() {
+    const container = document.getElementById("achievements-container");
+    container.innerHTML = "";
+
+    const unlockedCount = gameState.unlockedItems.length;
+    
+    // คำนวณจำนวนความเชื่อมโยงที่เปิดได้
+    let connCount = 0;
+    CONNECTIONS_DATA.forEach(c => {
+        if (gameState.unlockedItems.includes(c.item1) && gameState.unlockedItems.includes(c.item2)) {
+            connCount++;
+        }
+    });
+
+    ACHIEVEMENTS_DATA.forEach(ach => {
+        let isUnlocked = false;
+        if (ach.reqCount && unlockedCount >= ach.reqCount) isUnlocked = true;
+        if (ach.reqConn && connCount >= ach.reqConn) isUnlocked = true;
+
+        const card = document.createElement("div");
+        card.className = `badge-card ${isUnlocked ? 'unlocked' : ''}`;
+        card.innerHTML = `
+            <div class="badge-icon">${isUnlocked ? ach.icon : '🔒'}</div>
+            <div class="badge-text">
+                <h4>${ach.title}</h4>
+                <p>${ach.desc}</p>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ==========================================
+// STARTUP INITIALIZATION
+// ==========================================
+
+window.onload = () => {
+    loadGame();
+    renderHome();
+};
+</script>
+
+</body>
+</html>
